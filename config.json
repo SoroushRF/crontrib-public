@@ -1,0 +1,12 @@
+{
+  "score_threshold": 9,
+  "top_n_per_run": 10,
+  "always_send_top_n": 3,
+  "lookback_hours": 1,
+  "digest_hour_utc": 10,
+  "skills": [
+    "Python", "Django", "REST APIs", "ML", "AI", "DevOps",
+    "Go", "Rust", "Ruby", "Gemini CLI", "AI APIs", "integrations"
+  ],
+  "batch_size": 50
+}
