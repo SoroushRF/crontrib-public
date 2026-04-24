@@ -133,12 +133,11 @@ def score_items(items, skills, config):
     prompt = f"""You are helping a computer engineering student find great open source 
 contribution opportunities for Google Summer of Code.
 
-Score each item for relevance to these skills: {", ".join(skills)}.
-
-Also consider:
-- Is it labeled "good first issue" or "help wanted"?
-- Is the task clearly described and realistically doable by a first-year CS student?
-- Is it a meaningful contribution (not just a typo fix)?
+Score each item from 0 to 100 based on this matrix:
+1. Skill Match (Max 40 pts): How well does it align with: {", ".join(skills)}?
+2. Scope & Doability (Max 30 pts): Is it suitable for a student? Not too big, but not a 5-minute typo fix.
+3. Clarity (Max 20 pts): Is the issue well-described with clear reproduction steps or goals?
+4. Signal (Max 10 pts): Does it have "good first issue" or "help wanted" labels?
 
 Items:
 {json.dumps(prompt_items, indent=2)}
@@ -147,14 +146,14 @@ Respond ONLY with a valid JSON array, no markdown fences, no explanation:
 [
   {{
     "id": <same id from input>,
-    "score": <1-10>,
-    "reason": "<one sentence>",
+    "score": <0-100>,
+    "reason": "<one sentence explanation of the score breakdown>",
     "skills_needed": ["skill1", "skill2"],
     "good_first_issue": <true or false>
   }}
 ]"""
 
-    model = "gemini-3.1-flash-lite-preview"
+    model = "gemma-4-31b-it"
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
     payload = {
@@ -233,7 +232,7 @@ def format_message(items, title=None):
         item_type = "PR" if item["type"] == "pr" else "Issue"
 
         lines.append(
-            f"{i}. ⭐ *{score}/10* {gfi}\n"
+            f"{i}. ⭐ *{score}/100* {gfi}\n"
             f"*{item['title']}*\n"
             f"📂 `{item['repo']}` — #{item['number']} ({item_type})\n"
             f"🛠 {skills}\n"
@@ -303,10 +302,10 @@ def main():
     buffer = load_buffer()
     buffer.extend(all_scored)
     
-    # 2. Logic: Immediate Alert for 9+ items found in THIS run
+    # 2. Logic: Immediate Alert for high-score items found in THIS run
     urgent_items = [x for x in all_scored if x.get("score", 0) >= config["score_threshold"]]
     if urgent_items:
-        print(f"Found {len(urgent_items)} urgent items (9+). Sending instant alert.")
+        print(f"Found {len(urgent_items)} urgent items. Sending instant alert.")
         msg = format_message(urgent_items, title="🚨 *Crontrib High-Signal Alert*")
         send_telegram(msg)
         

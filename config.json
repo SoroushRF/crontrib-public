@@ -1,5 +1,5 @@
 {
-  "score_threshold": 9,
+  "score_threshold": 95,
   "top_n_per_run": 10,
   "always_send_top_n": 3,
   "lookback_hours": 1,
